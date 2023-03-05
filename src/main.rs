@@ -1,6 +1,9 @@
 extern crate pretty_env_logger;
+use chrono::{DateTime, Local, TimeZone};
+use chrono::Timelike;
+use futures::executor::block_on;
 use std::io::BufReader;
-use tokio_cron_scheduler::{JobScheduler, JobToRun, Job};
+use std::{thread, time};
 use actix_files as fs;
 use actix_web::{Error, error, post, put, get, Responder, App, web, HttpServer, HttpRequest, HttpResponse};
 use actix_web::http::header::ContentType;
@@ -123,27 +126,42 @@ async fn index(req: HttpRequest) -> impl Responder {
 async fn main() -> std::io::Result<()> {
     pretty_env_logger::init();
 
-    let mut sched = JobScheduler::new().await.unwrap();
+    thread::spawn(move || {
+        loop {
+            let dt = time::Duration::from_millis(5000);
+            thread::sleep(dt);
 
-    //sched.add(Job::new("1/10 * * * * *", |_, _| {
-    //    let file = File::open("subscribers").unwrap();
-    //    let lines = BufReader::new(file).lines();
-    //    for line in lines {
-    //        let line = match line {
-    //            Ok(l) => l,
-    //            Err(_) => continue,
-    //        };
-    //        let obj = serde_json::from_str(&line).unwrap();
-    //        match bedtime(obj).await {
-    //            Err(e) => println!("{e}"),
-    //            _ => {},
-    //        };
-    //    }
-    //    println!("Send out notifications");
-    //}).expect("Abc")).await;
+            let berlin: chrono::FixedOffset = chrono::FixedOffset::east(1 * 3600); // Berlin timezone is UTC+1
+            let now_berlin: DateTime<chrono::FixedOffset> = Local::now().with_timezone(&berlin);
 
-    let a = sched.start().await.expect("Could not start");
+            let h = now_berlin.hour();
+            let m = now_berlin.minute();
+            dbg!(h,m);
+            if h != 10 && m != 30 {
+                continue;
+            }
 
+            let file = if let Ok(line) = File::open("subscribers") {
+                line
+            } else {
+                eprintln!("could not open subscribers");   
+                continue
+            };
+            let lines = BufReader::new(file).lines();
+            for line in lines {
+                let line = match line {
+                    Ok(l) => l,
+                    Err(_) => continue,
+                };
+                let obj = serde_json::from_str(&line).unwrap();
+                match block_on(bedtime(obj)) {
+                    Err(e) => println!("{e}"),
+                    _ => {},
+                };
+
+            }
+        }
+    });
 
     HttpServer::new(|| App::new()
                     .service(index)
