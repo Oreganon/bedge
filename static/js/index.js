@@ -13,7 +13,7 @@ function urlBase64ToUint8Array(base64String) {
     return outputArray;
 }
 
-let public_key = "BIagy15bBenUFOodCAyj_X4Xb_6T0vKCzAso9WYSHltUXU5CHqLH1kb-knfjwdDjOwTSGz5Ywr1t_atr-Lb9-Bk=";
+let public_key = "BFASq4eHdd_VICPAACptsCXoZ9Qgm-gj0rzlD9YB-WFpOvY483qQz7Ll7c6mNDHr_SnAvXB-4t3uhqGLaKtGoTo=";
 
 function subscribeUserToPush() {
   return navigator.serviceWorker
