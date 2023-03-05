@@ -89,11 +89,6 @@ async fn save_subcription(mut payload: web::Payload) -> Result<HttpResponse, Err
     // body is loaded, now we can deserialize serde-json
     let obj = serde_json::from_slice::<SubscriptionInfo>(&body)?;
     
-    match bedtime(obj.clone()).await {
-        Err(e) => println!("{e}"),
-        _ => {},
-    }
-
     let mut file = OpenOptions::new()
         .write(true)
         .append(true)
