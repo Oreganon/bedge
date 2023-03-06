@@ -123,7 +123,7 @@ async fn main() -> std::io::Result<()> {
 
     thread::spawn(move || {
         loop {
-            let dt = time::Duration::from_millis(55000);
+            let dt = time::Duration::from_millis(500);
             thread::sleep(dt);
 
             let berlin: chrono::FixedOffset = chrono::FixedOffset::east(1 * 3600); // Berlin timezone is UTC+1
@@ -155,6 +155,9 @@ async fn main() -> std::io::Result<()> {
                 };
 
             }
+            let dt = time::Duration::from_secs(65);
+            thread::sleep(dt);
+
         }
     });
 
